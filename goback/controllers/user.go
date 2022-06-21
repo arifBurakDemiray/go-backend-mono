@@ -6,14 +6,12 @@ import (
 	"os"
 	"time"
 
-	"demiray.dev/goback/databases/drivers/sqlite"
 	libs "demiray.dev/goback/helpers"
 	"demiray.dev/goback/models"
-
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 func Login(c *gin.Context) {
@@ -26,10 +24,13 @@ func Login(c *gin.Context) {
 		userID, password string
 		userModel        models.User
 		err              error
+		db               *gorm.DB
 	)
+
+	db = libs.Connect()
+
 	userID, _ = libs.GetQueryParam("user_id", c)
 	password, _ = libs.GetQueryParam("password", c)
-	db := sqlite.Connect()
 	resultFind := db.Where("id = ? AND password = ?", userID, password).First(&userModel)
 	if resultFind.Error == nil || errors.Is(resultFind.Error, gorm.ErrRecordNotFound) {
 		if resultFind.RowsAffected <= 0 {

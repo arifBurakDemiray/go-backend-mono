@@ -1,10 +1,13 @@
 package libs
 
 import (
+	"log"
 	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +22,20 @@ func RecoverError(c *gin.Context) {
 		c.JSON(500, responseData)
 		return
 	}
+}
+
+func Connect() *gorm.DB {
+	var db *gorm.DB
+	var err error
+	dsn := "root:1qaz2WSX3edc>@tcp(127.0.0.1:3306)/goback?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Println("Connection Failed to Open")
+	} else {
+		log.Println("Connection Established")
+	}
+
+	return db
 }
 
 // APIResponseData func

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"/go-backend-mono/goback/databases/drivers/sqlite" //TODO mysql
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -10,9 +9,9 @@ import (
 
 	libs "demiray.dev/goback/helpers"
 	"demiray.dev/goback/models"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetAllTask(c *gin.Context) {
@@ -22,9 +21,11 @@ func GetAllTask(c *gin.Context) {
 		msg          string
 		responseData = gin.H{}
 		taskModels   []models.Task
+		db           *gorm.DB
 	)
-	db := sqlite.Connect()
-	// filter
+
+	db = libs.Connect()
+
 	token := c.Request.Header.Get("Authorization")
 	userID := libs.GetUserIDFromToken(token)
 	if userID != "" {
@@ -68,7 +69,7 @@ func CreateTask(c *gin.Context) {
 		userModel    models.User
 		taskModels   []models.Task
 	)
-	db := sqlite.Connect()
+	db := libs.Connect()
 	token := c.Request.Header.Get("Authorization")
 	userID := libs.GetUserIDFromToken(token)
 	if userID != "" {
@@ -89,8 +90,7 @@ func CreateTask(c *gin.Context) {
 	if status == 200 {
 		now := time.Now()
 		currentDate := now.Format("2006-01-02")
-		var totalCount int64
-		totalCount = 0
+		var totalCount int64 = 0
 		result := db.Debug().Where("user_id = ? AND created_date = ?", userID, currentDate).Find(&taskModels).Count(&totalCount)
 		if result.Error != nil {
 			status = 500
@@ -112,23 +112,24 @@ func CreateTask(c *gin.Context) {
 				status = http.StatusUnprocessableEntity
 				msg = "maximum todo for today"
 			}
+
 		}
+		if status == 200 {
+			msg = "Success"
+			responseData = gin.H{
+				"status": status,
+				"data":   taskModel,
+				"msg":    msg,
+			}
+		} else {
+			if msg == "" {
+				msg = "Error"
+			}
+			responseData = gin.H{
+				"status": status,
+				"msg":    msg,
+			}
+		}
+		libs.APIResponseData(c, status, responseData)
 	}
-	if status == 200 {
-		msg = "Success"
-		responseData = gin.H{
-			"status": status,
-			"data":   taskModel,
-			"msg":    msg,
-		}
-	} else {
-		if msg == "" {
-			msg = "Error"
-		}
-		responseData = gin.H{
-			"status": status,
-			"msg":    msg,
-		}
-	}
-	libs.APIResponseData(c, status, responseData)
 }
