@@ -17,28 +17,28 @@ import (
 func Login(c *gin.Context) {
 	defer libs.RecoverError(c)
 	var (
-		status           = 200
-		msg              string
-		responseData     = gin.H{}
-		token            string
-		userID, password string
-		userModel        models.User
-		err              error
-		db               *gorm.DB
+		status             = 200
+		msg                string
+		responseData       = gin.H{}
+		token              string
+		userName, password string
+		userModel          models.User
+		err                error
+		db                 *gorm.DB
 	)
 
 	db = libs.Connect()
 
-	userID, _ = libs.GetQueryParam("user_id", c)
+	userName, _ = libs.GetQueryParam("user_name", c)
 	password, _ = libs.GetQueryParam("password", c)
-	resultFind := db.Where("id = ? AND password = ?", userID, password).First(&userModel)
+	resultFind := db.Where("email = ? AND password = ?", userName, password).First(&userModel)
 	if resultFind.Error == nil || errors.Is(resultFind.Error, gorm.ErrRecordNotFound) {
 		if resultFind.RowsAffected <= 0 {
 			status = http.StatusUnauthorized
-			msg = "incorrect user_id/pwd"
+			msg = "incorrect user_name/pwd"
 		} else {
 			atClaims := jwt.MapClaims{}
-			atClaims["user_id"] = userID
+			atClaims["user_id"] = userModel.ID
 			atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
 			at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 			token, err = at.SignedString([]byte(os.Getenv("JWT_TOKEN")))
