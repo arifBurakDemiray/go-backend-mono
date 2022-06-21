@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"demiray.dev/goback/models"
 	"github.com/dgrijalva/jwt-go"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -24,10 +25,12 @@ func RecoverError(c *gin.Context) {
 	}
 }
 
+//TODO seperate db related funcs to db helper
+
 func Connect() *gorm.DB {
 	var db *gorm.DB
 	var err error
-	dsn := "root:1qaz2WSX3edc>@tcp(127.0.0.1:3306)/goback?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := os.Getenv("DB_CONNECTION_STRING")
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Println("Connection Failed to Open")
@@ -36,6 +39,16 @@ func Connect() *gorm.DB {
 	}
 
 	return db
+}
+
+func InitDbTables() {
+
+	db := Connect()
+
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Task{})
+	db.AutoMigrate(&models.Role{})
+
 }
 
 // APIResponseData func
