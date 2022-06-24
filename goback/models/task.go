@@ -3,8 +3,7 @@ package models
 import (
 	"time"
 
-	"demiray.dev/goback/services"
-
+	"demiray.dev/goback/utils"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +24,7 @@ func (Task) TableName() string {
 func (object *Task) BeforeCreate(db *gorm.DB) (err error) {
 	now := time.Now()
 	object.CreatedDate = now.Format("2006-01-02")
-	object.ID = services.GenerateUserID()
+	object.ID = utils.GenerateUserID()
 	return
 }
 
@@ -35,7 +34,7 @@ func (u *Task) PassBodyJSONToModel(JSONObject map[string]interface{}) {
 		res interface{}
 		val string
 	)
-	val, res = services.ConvertJSONValueToVariable("Content", JSONObject)
+	val, res = utils.ConvertJSONValueToVariable("Content", JSONObject)
 	if res != nil {
 		u.Content = val
 	}
