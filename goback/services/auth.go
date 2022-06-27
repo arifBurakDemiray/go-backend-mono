@@ -8,8 +8,8 @@ import (
 
 	libs "demiray.dev/goback/helpers"
 	"demiray.dev/goback/models"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 )
 
